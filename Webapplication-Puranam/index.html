@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@700&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="book-data.js"></script>
 <style>
 :root{
   --bg:#07050f;--bg2:#0d0920;--bg3:#120d2a;--bg4:#181030;
@@ -267,6 +269,46 @@ footer{background:var(--bg2);border-top:1px solid rgba(201,148,14,.1);padding:56
 .mob-menu a{color:var(--text);text-decoration:none;font-size:15px;font-weight:500;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);transition:color .3s}
 .mob-menu a:hover{color:var(--gold2)}
 
+/* ── READ BOOK ── */
+#read-book{background:var(--bg3)}
+.rb-loading{
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  padding:56px 32px;color:var(--muted);font-size:15px;
+}
+.rb-loading i{font-size:32px;color:var(--gold);animation:symglow 1.8s ease-in-out infinite}
+#rb-viewer{display:none}
+#rb-filename{
+  font-size:14px;color:var(--gold2);margin-bottom:18px;font-family:'Cinzel',serif;
+  display:flex;align-items:center;gap:10px;letter-spacing:.5px;
+}
+#rb-pages{
+  display:flex;flex-direction:column;gap:16px;align-items:center;
+  position:relative;
+}
+#rb-pages canvas{
+  max-width:100%;border-radius:12px;
+  box-shadow:0 8px 40px rgba(0,0,0,.55);
+  border:1px solid rgba(201,148,14,.15);
+  user-select:none;-webkit-user-select:none;
+  pointer-events:none;
+}
+.rb-shield{
+  position:absolute;inset:0;z-index:5;
+  user-select:none;-webkit-user-select:none;
+}
+#rb-nav{
+  display:flex;align-items:center;gap:16px;
+  background:rgba(201,148,14,.07);border:1px solid rgba(201,148,14,.18);
+  border-radius:50px;padding:10px 24px;margin-top:8px;margin-bottom:20px;
+}
+#rb-nav button{
+  background:none;border:none;color:var(--gold);font-size:18px;
+  cursor:pointer;padding:4px 8px;transition:opacity .2s;
+}
+#rb-nav button:disabled{opacity:.3;cursor:default}
+#rb-page-info{font-size:13px;color:var(--muted);min-width:90px;text-align:center}
+@media print{#read-book,#rb-pages,#rb-viewer{display:none!important}}
+
 /* ── RESPONSIVE ── */
 @media(max-width:1024px){
   .fg{grid-template-columns:1fr 1fr;gap:32px}
@@ -325,10 +367,8 @@ footer{background:var(--bg2);border-top:1px solid rgba(201,148,14,.1);padding:56
   </div>
 </div>
 
-<!-- Hidden YouTube Player -->
-<div id="ytPlayerWrap" style="position:fixed;bottom:-200px;left:-200px;width:1px;height:1px;overflow:hidden;pointer-events:none;z-index:-1">
-  <div id="ytPlayer"></div>
-</div>
+<!-- Local Audio Player -->
+<audio id="bgAudio" src="01_Sri_Gruvugaru.mp3" loop preload="none"></audio>
 
 <!-- NAV -->
 <nav id="nav">
@@ -341,6 +381,7 @@ footer{background:var(--bg2);border-top:1px solid rgba(201,148,14,.1);padding:56
     <li><a href="#puranas">18 Puranas</a></li>
     <li><a href="#categories">Categories</a></li>
     <li><a href="#verse">Verses</a></li>
+    <li><a href="#read-book">Read Book</a></li>
   </ul>
   <button class="nav-cta" onclick="document.getElementById('puranas').scrollIntoView({behavior:'smooth'})">Explore ✦</button>
   <button class="nav-mobile" id="mobBtn" aria-label="Menu">
@@ -354,6 +395,7 @@ footer{background:var(--bg2);border-top:1px solid rgba(201,148,14,.1);padding:56
   <a href="#puranas" onclick="closeMob()">18 Puranas</a>
   <a href="#categories" onclick="closeMob()">Categories</a>
   <a href="#verse" onclick="closeMob()">Daily Verse</a>
+  <a href="#read-book" onclick="closeMob()">Read Book</a>
 </div>
 
 <!-- HERO -->
@@ -503,6 +545,41 @@ footer{background:var(--bg2);border-top:1px solid rgba(201,148,14,.1);padding:56
       The Puranas are the fifth Veda. Through stories, legends and myths, they carry the eternal flame of Vedic wisdom into every home and heart across the ages.
     </blockquote>
     <p class="qb-src reveal rd1">— Traditional Teaching on the Mahapuranas</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- READ BOOK -->
+<section id="read-book">
+  <div class="container">
+    <div class="s-head">
+      <div class="stag reveal">Sacred Text</div>
+      <h2 class="s-title reveal rd1">Read Book</h2>
+      <p class="s-desc reveal rd2">ఆదిత్య స్తవము — Read the sacred text in our protected Kindle-style viewer.</p>
+    </div>
+    <div id="rb-open-btn" class="reveal rd1" style="text-align:center;padding:48px 0">
+      <button onclick="loadBook()" style="display:inline-flex;align-items:center;gap:12px;padding:16px 40px;background:linear-gradient(135deg,var(--gold),#a07008);color:#000;border:none;border-radius:50px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.5px;font-family:'Cinzel',serif;transition:all .3s" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(201,148,14,.4)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <i class="fas fa-book-open"></i> Read Aditya Stavamu
+      </button>
+      <p style="color:var(--muted);font-size:12px;margin-top:14px;letter-spacing:1px">ఆదిత్య స్తవము · Protected Kindle Viewer</p>
+    </div>
+    <div id="rb-loading" style="display:none" class="rb-loading">
+      <i class="fas fa-spinner fa-spin"></i>
+      <span>Opening sacred text…</span>
+    </div>
+    <div id="rb-viewer">
+      <div id="rb-filename">
+        <i class="fas fa-book-open"></i>
+        <span>Aditya Stavamu</span>
+      </div>
+      <div id="rb-nav">
+        <button id="rb-prev" title="Previous Page"><i class="fas fa-chevron-left"></i></button>
+        <span id="rb-page-info">Page 1 of 1</span>
+        <button id="rb-next" title="Next Page"><i class="fas fa-chevron-right"></i></button>
+      </div>
+      <div id="rb-pages"></div>
+    </div>
   </div>
 </section>
 
@@ -959,72 +1036,28 @@ function closeMob(){ document.getElementById('mobMenu').classList.remove('open')
 // ── INITIAL RENDER ────────────────────────────────────────────
 renderCards('all');
 
-// ── YOUTUBE MUSIC PLAYER ──────────────────────────────────────
-var ytPlayer, ytReady = false, ytPlaying = false, ytMuted = true;
+// ── LOCAL MP3 MUSIC PLAYER ────────────────────────────────────
+var bgAudio = document.getElementById('bgAudio');
+var audioPlaying = false;
 
-// Load YouTube IFrame API
-(function(){
-  var s = document.createElement('script');
-  s.src = 'https://www.youtube.com/iframe_api';
-  document.head.appendChild(s);
-})();
-
-function onYouTubeIframeAPIReady(){
-  ytPlayer = new YT.Player('ytPlayer',{
-    videoId:'GNGFbVnI5o0',
-    playerVars:{
-      autoplay:1, mute:1, controls:0,
-      loop:1, playlist:'GNGFbVnI5o0',
-      playsinline:1, rel:0, disablekb:1,
-      enablejsapi:1
-    },
-    events:{
-      onReady: function(e){
-        ytReady = true;
-        e.target.setVolume(80);
-        e.target.playVideo();
-        // Auto-unmute on first user interaction
-        var autoUnmute = function(){
-          if(ytReady && ytMuted){
-            e.target.unMute();
-            ytMuted = false;
-            setMusicUI(true);
-          }
-          document.removeEventListener('click', autoUnmute);
-          document.removeEventListener('scroll', autoUnmute);
-          document.removeEventListener('keydown', autoUnmute);
-        };
-        document.addEventListener('click', autoUnmute, {once:true});
-        document.addEventListener('scroll', autoUnmute, {once:true});
-        document.addEventListener('keydown', autoUnmute, {once:true});
-      },
-      onStateChange: function(e){
-        ytPlaying = (e.data === YT.PlayerState.PLAYING);
-        if(ytPlaying && !ytMuted) setMusicUI(true);
-      },
-      onError: function(){
-        document.getElementById('mbLabel').textContent = 'Audio unavailable';
-      }
-    }
-  });
-}
+bgAudio.addEventListener('play',  function(){ setMusicUI(true); });
+bgAudio.addEventListener('pause', function(){ setMusicUI(false); });
+bgAudio.addEventListener('error', function(){
+  document.getElementById('mbLabel').textContent = 'Audio unavailable';
+});
 
 function toggleMusic(){
-  if(!ytReady) return;
-  if(ytMuted){
-    ytPlayer.unMute();
-    ytPlayer.setVolume(80);
-    ytMuted = false;
-    if(!ytPlaying) ytPlayer.playVideo();
-    setMusicUI(true);
+  if(audioPlaying){
+    bgAudio.pause();
   } else {
-    ytPlayer.mute();
-    ytMuted = true;
-    setMusicUI(false);
+    bgAudio.play().catch(function(){
+      document.getElementById('mbLabel').textContent = 'Click again to play';
+    });
   }
 }
 
 function setMusicUI(playing){
+  audioPlaying = playing;
   var pulse = document.getElementById('mbPulse');
   var icon  = document.getElementById('mbIcon');
   var label = document.getElementById('mbLabel');
@@ -1041,6 +1074,79 @@ function setMusicUI(playing){
     btn.classList.add('muted');
   }
 }
+
+// ── PDF READER (auto-load) ────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+var rbPdf = null, rbPage = 1, rbTotal = 0;
+
+function b64ToUint8(b64){
+  var bin = atob(b64), len = bin.length, arr = new Uint8Array(len);
+  for(var i=0;i<len;i++) arr[i] = bin.charCodeAt(i);
+  return arr;
+}
+
+function loadBook(){
+  document.getElementById('rb-open-btn').style.display = 'none';
+  document.getElementById('rb-loading').style.display  = 'flex';
+  pdfjsLib.getDocument({data: b64ToUint8(BOOK_PDF_DATA)}).promise
+    .then(function(pdf){
+      rbPdf = pdf; rbTotal = pdf.numPages; rbPage = 1;
+      document.getElementById('rb-loading').style.display = 'none';
+      document.getElementById('rb-viewer').style.display  = 'block';
+      renderRbPage(1);
+    })
+    .catch(function(){
+      document.getElementById('rb-loading').innerHTML =
+        '<i class="fas fa-exclamation-circle" style="color:var(--saffron)"></i><span>Could not render book.</span>';
+    });
+}
+
+function renderRbPage(num){
+  if(!rbPdf) return;
+  var pagesDiv = document.getElementById('rb-pages');
+  pagesDiv.innerHTML = '';
+  rbPdf.getPage(num).then(function(page){
+    var vp0 = page.getViewport({scale:1});
+    var scale = Math.min((pagesDiv.clientWidth || 860) / vp0.width, 2.2);
+    var viewport = page.getViewport({scale: scale});
+    var canvas = document.createElement('canvas');
+    canvas.width  = viewport.width;
+    canvas.height = viewport.height;
+    pagesDiv.appendChild(canvas);
+    // transparent shield over canvas prevents drag-select & long-press save
+    var shield = document.createElement('div');
+    shield.className = 'rb-shield';
+    shield.style.height = viewport.height + 'px';
+    pagesDiv.appendChild(shield);
+    page.render({canvasContext: canvas.getContext('2d'), viewport: viewport});
+    document.getElementById('rb-page-info').textContent = 'Page ' + num + ' of ' + rbTotal;
+    document.getElementById('rb-prev').disabled = num <= 1;
+    document.getElementById('rb-next').disabled = num >= rbTotal;
+  });
+}
+
+document.getElementById('rb-prev').addEventListener('click', function(){
+  if(rbPage > 1){ rbPage--; renderRbPage(rbPage); }
+});
+document.getElementById('rb-next').addEventListener('click', function(){
+  if(rbPage < rbTotal){ rbPage++; renderRbPage(rbPage); }
+});
+
+// Block right-click on reader
+document.getElementById('rb-pages').addEventListener('contextmenu', function(e){
+  e.preventDefault(); return false;
+});
+
+// Block Ctrl+P (print to PDF) when reader is visible
+document.addEventListener('keydown', function(e){
+  if((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 's')){
+    if(document.getElementById('rb-viewer').style.display !== 'none'){
+      e.preventDefault(); return false;
+    }
+  }
+});
 </script>
 </body>
 </html>
